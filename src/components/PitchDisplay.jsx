@@ -279,7 +279,12 @@ export function PitchDisplay({
   return (
     <div className="pitch-display-root">
       {/* Scrollable note grid */}
-      <div className="pitch-display-wrap" ref={containerRef}>
+      <div 
+        className="pitch-display-wrap" 
+        ref={containerRef}
+        onClick={active ? onToggle : undefined}
+        style={{ cursor: active ? 'pointer' : 'default' }}
+      >
         <div className="pitch-display-inner" style={{ height: totalHeight }}>
           {NOTE_GRID.map(({ midi, semitone, octave }) => {
             const { label, isDiatonic, isTonic } = getNoteInfo(
@@ -366,25 +371,6 @@ export function PitchDisplay({
         <div className="pitch-paused-overlay" onClick={onToggle}>
           <div className="play-icon" />
         </div>
-      )}
-
-      {/* Pause trigger zone - center area only */}
-      {active && (
-        <div 
-          className="pause-trigger-zone"
-          onClick={onToggle}
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '200px',
-            height: '200px',
-            cursor: 'pointer',
-            zIndex: 8,
-            opacity: 0,
-          }}
-        />
       )}
     </div>
   );

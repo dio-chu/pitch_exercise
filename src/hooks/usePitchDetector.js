@@ -2,10 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { detectPitch } from "../utils/pitchDetection";
 import { frequencyToMidi } from "../utils/noteUtils";
 
-/**
- * Continuously reads microphone input and returns pitch information.
- * When `enabled` is false, stops the audio context and returns null.
- */
 export function usePitchDetector(enabled) {
   const [pitchInfo, setPitchInfo] = useState(null);
   const [micError, setMicError] = useState(null);
@@ -13,57 +9,39 @@ export function usePitchDetector(enabled) {
   const ctxRef = useRef(null);
   const sourceRef = useRef(null);
   const streamRef = useRef(null);
-  const prevFreqRef = useRef(null); // for octave-stability heuristic
-  const smoothBufferRef = useRef([]); // for smoothing frequency readings
-  const SMOOTH_WINDOW = 2; // number of samples to average (lower = more responsive)
+
+  const prevFreqRef = useRef(null);
+  const smoothBufferRef = useRef([]);
+  const SMOOTH_WINDOW = 5;   // 取最近 5 幀（≈83ms），兼顧穩定與反應速度
+  const MIN_READINGS = 3;    // 至少累積 3 幀才輸出（≈50ms），可過濾開口誤判又不會太慢
+  const MAX_SPREAD_ST = 2.0; // 放寬散布容忍度，換音過渡時不會卡太久
 
   useEffect(() => {
     if (!enabled) {
       setPitchInfo(null);
       prevFreqRef.current = null;
-      smoothBufferRef.current = [];
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-        rafRef.current = null;
-      }
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
       return;
     }
 
     let active = true;
-    setMicError(null);
-
-    // Detect mobile devices
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
     navigator.mediaDevices
       .getUserMedia({
         audio: {
           echoCancellation: false,
           noiseSuppression: false,
-          autoGainControl: isMobile, // Enable on mobile for better sensitivity
-          sampleRate: 48000, // Request higher sample rate
+          autoGainControl: true,
         },
         video: false,
       })
       .then((stream) => {
-        if (!active) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
-
-        streamRef.current = stream;
+        if (!active) return;
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
         ctxRef.current = ctx;
-
         const analyser = ctx.createAnalyser();
-        // 4096 samples → better resolution for low notes (C2 ≈ 65 Hz)
         analyser.fftSize = 4096;
-        analyser.smoothingTimeConstant = 0; // No smoothing for faster response
-
         const source = ctx.createMediaStreamSource(stream);
-        sourceRef.current = source;
         source.connect(analyser);
-
         const buffer = new Float32Array(analyser.fftSize);
 
         const loop = () => {
@@ -72,68 +50,71 @@ export function usePitchDetector(enabled) {
           let freq = detectPitch(buffer, ctx.sampleRate);
 
           if (freq !== null) {
-            // ── Octave-stability heuristic (improved) ──
             if (prevFreqRef.current !== null) {
               const prev = prevFreqRef.current;
-              const octUp = freq * 2;
-              const octDown = freq / 2;
-              const semidist = (f) => Math.abs(12 * Math.log2(f / prev));
+              const ratio = freq / prev;
 
-              // Check if an octave is closer
-              const candidates = [freq, octUp, octDown].filter(
-                (f) => f >= 60 && f <= 2200,
-              );
-              const best = candidates.reduce((a, b) =>
-                semidist(a) <= semidist(b) ? a : b,
-              );
-
-              // Snap to octave if current reading is off by more than 4 semitones
-              if (semidist(freq) > 4 && semidist(best) < semidist(freq)) {
-                freq = best;
+              /**
+               * 核心優化：八度跳躍補正
+               * 如果檢測到的頻率大約是前一個頻率的 0.5 倍（掉八度）
+               * 且目前的頻率處於較低音域，而前一個是中音
+               * 我們「試探性」地將它翻倍，看是否更合理。
+               */
+              if (ratio > 0.45 && ratio < 0.55) {
+                // 可能是誤判為低八度，嘗試恢復
+                // 如果你正在唱 G3 -> G4，但它檢測出 G3 -> G3，這部分交給 YIN 的動態閾值處理
+                // 這裡處理的是 G3 -> G2 的誤判
+                freq = freq * 2;
+              } else if (ratio > 1.9 && ratio < 2.1) {
+                // 這是正常的八度跳躍（如 G3 -> G4），予以保留
               }
             }
 
-            // ── Smoothing filter ──
             smoothBufferRef.current.push(freq);
-            if (smoothBufferRef.current.length > SMOOTH_WINDOW) {
+            if (smoothBufferRef.current.length > SMOOTH_WINDOW)
               smoothBufferRef.current.shift();
-            }
-            const smoothedFreq =
-              smoothBufferRef.current.reduce((a, b) => a + b, 0) /
-              smoothBufferRef.current.length;
 
-            prevFreqRef.current = smoothedFreq;
-            const midiFloat = frequencyToMidi(smoothedFreq);
-            const midiRounded = Math.round(midiFloat);
-            const cents = (midiFloat - midiRounded) * 100;
-            setPitchInfo({ freq: smoothedFreq, midiFloat, midiRounded, cents });
-          } else {
-            // Clear smooth buffer on silence
-            if (smoothBufferRef.current.length > 0) {
-              smoothBufferRef.current = [];
+            prevFreqRef.current = freq;
+
+            // 累積幀數不足時先不輸出，避免開口瞬間誤判
+            if (smoothBufferRef.current.length < MIN_READINGS) {
+              rafRef.current = requestAnimationFrame(loop);
+              return;
             }
+
+            // 用中位數取代平均值：對偶發八度誤判有強力過濾效果
+            const sorted = [...smoothBufferRef.current].sort((a, b) => a - b);
+            const medianFreq = sorted[Math.floor(sorted.length / 2)];
+
+            // 散布檢查：若這批讀數音高跨度過大（正在換音），暫不更新顯示
+            const midiValues = smoothBufferRef.current.map(frequencyToMidi);
+            const spread = Math.max(...midiValues) - Math.min(...midiValues);
+            if (spread > MAX_SPREAD_ST) {
+              rafRef.current = requestAnimationFrame(loop);
+              return;
+            }
+
+            const midiFloat = frequencyToMidi(medianFreq);
+            setPitchInfo({
+              freq: medianFreq,
+              midiFloat,
+              midiRounded: Math.round(midiFloat),
+              cents: (midiFloat - Math.round(midiFloat)) * 100,
+            });
+          } else {
+            // 靜音時清空緩衝區，下次發聲才重新累積
+            smoothBufferRef.current = [];
             setPitchInfo(null);
           }
-
           rafRef.current = requestAnimationFrame(loop);
         };
-
-        rafRef.current = requestAnimationFrame(loop);
+        loop();
       })
-      .catch((err) => {
-        console.error("Microphone error:", err);
-        setMicError(err.message || "Microphone access denied");
-      });
+      .catch((err) => setMicError(err.message));
 
     return () => {
       active = false;
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-      try {
-        sourceRef.current?.disconnect();
-      } catch (_) {}
       ctxRef.current?.close();
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-      rafRef.current = null;
     };
   }, [enabled]);
 
