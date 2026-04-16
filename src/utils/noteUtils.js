@@ -60,30 +60,30 @@ export function midiToFrequency(midi) {
 
 /**
  * Returns label string for a given note, or null if not a labeled note.
- * C notes are always returned regardless of key.
  */
 export function getNoteInfo(semitone, octave, labelType, transposeOffset) {
-  const isC = semitone === 0;
   const relativeToRoot = (((semitone - transposeOffset) % 12) + 12) % 12;
   const degreeIndex = MAJOR_SCALE_INTERVALS.indexOf(relativeToRoot);
   const isDiatonic = degreeIndex !== -1;
+  const isTonic = relativeToRoot === 0; // Tonic note (root of the key)
 
   let label = null;
 
-  // Western mode: show all notes
+  // Western mode: transpose the note names
   if (labelType === "western") {
-    label = CHROMATIC_WESTERN[semitone] + octave;
+    const transposedSemitone = (((semitone - transposeOffset) % 12) + 12) % 12;
+    label = CHROMATIC_WESTERN[transposedSemitone] + octave;
   }
-  // Solfege/Number mode: show only diatonic notes
-  else if (isDiatonic) {
+  // Solfege/Number mode: show diatonic notes, plus always show tonic
+  else if (isDiatonic || isTonic) {
     if (labelType === "solfege") {
-      label = SOLFEGE_NAMES[degreeIndex];
+      label = isTonic ? SOLFEGE_NAMES[0] : SOLFEGE_NAMES[degreeIndex];
     } else {
-      label = NUMBER_NAMES[degreeIndex];
+      label = isTonic ? NUMBER_NAMES[0] : NUMBER_NAMES[degreeIndex];
     }
   }
 
-  return { label, isDiatonic, isC };
+  return { label, isDiatonic, isTonic };
 }
 
 // C7 = MIDI 96, C2 = MIDI 36; generate top-to-bottom

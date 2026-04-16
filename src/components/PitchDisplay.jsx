@@ -267,7 +267,7 @@ export function PitchDisplay({
       <div className="pitch-display-wrap" ref={containerRef}>
         <div className="pitch-display-inner" style={{ height: totalHeight }}>
           {NOTE_GRID.map(({ midi, semitone, octave }) => {
-            const { label, isDiatonic, isC } = getNoteInfo(
+            const { label, isDiatonic, isTonic } = getNoteInfo(
               semitone,
               octave,
               labelType,
@@ -275,7 +275,11 @@ export function PitchDisplay({
             );
             const rowClass =
               "note-row " +
-              (isC ? "row-c" : isDiatonic ? "row-diatonic" : "row-chromatic");
+              (isTonic
+                ? "row-c"
+                : isDiatonic
+                  ? "row-diatonic"
+                  : "row-chromatic");
 
             const hasLabel = label !== null;
 
