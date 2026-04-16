@@ -30,25 +30,25 @@ export function PitchDisplay({
     stopNote(); // Stop any existing note
 
     const freq = midiToFrequency(midi);
-    console.log(`🎵 Playing: MIDI ${midi}, Frequency ${freq.toFixed(2)} Hz`);
 
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 
-    oscillator.type = "sine";
+    oscillator.type = "sawtooth";
     oscillator.frequency.value = freq;
-
-    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
 
     oscillator.connect(gainNode);
     gainNode.connect(audioCtx.destination);
 
-    oscillator.start();
-
     audioContextRef.current = audioCtx;
     oscillatorRef.current = oscillator;
     gainNodeRef.current = gainNode;
+
+    audioCtx.resume().then(() => {
+      gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      oscillator.start();
+    });
   };
 
   // Stop playing the current note
@@ -78,22 +78,23 @@ export function PitchDisplay({
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 
-    oscillator.type = "sine";
+    oscillator.type = "sawtooth";
     oscillator.frequency.value = freq;
-
-    gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(
-      0.01,
-      audioCtx.currentTime + duration,
-    );
 
     oscillator.connect(gainNode);
     gainNode.connect(audioCtx.destination);
 
-    oscillator.start();
-    oscillator.stop(audioCtx.currentTime + duration);
-
-    setTimeout(() => audioCtx.close(), (duration + 0.1) * 1000);
+    // resume() is required on iOS Safari — AudioContext starts suspended
+    audioCtx.resume().then(() => {
+      gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioCtx.currentTime + duration,
+      );
+      oscillator.start();
+      oscillator.stop(audioCtx.currentTime + duration);
+      setTimeout(() => audioCtx.close(), (duration + 0.1) * 1000);
+    });
   };
 
   useEffect(() => {
