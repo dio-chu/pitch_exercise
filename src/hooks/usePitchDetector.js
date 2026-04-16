@@ -15,7 +15,7 @@ export function usePitchDetector(enabled) {
   const streamRef = useRef(null);
   const prevFreqRef = useRef(null); // for octave-stability heuristic
   const smoothBufferRef = useRef([]); // for smoothing frequency readings
-  const SMOOTH_WINDOW = 3; // number of samples to average
+  const SMOOTH_WINDOW = 2; // number of samples to average (lower = more responsive)
 
   useEffect(() => {
     if (!enabled) {
@@ -58,6 +58,7 @@ export function usePitchDetector(enabled) {
         const analyser = ctx.createAnalyser();
         // 4096 samples → better resolution for low notes (C2 ≈ 65 Hz)
         analyser.fftSize = 4096;
+        analyser.smoothingTimeConstant = 0; // No smoothing for faster response
 
         const source = ctx.createMediaStreamSource(stream);
         sourceRef.current = source;

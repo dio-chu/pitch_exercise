@@ -13,6 +13,15 @@ const HISTORY_MS = 10000; // 10 s of pitch trail shown on canvas
 
 const NOTE_GRID = generateNoteGrid();
 
+// Shared AudioContext — reusing one instance fixes headphone routing on iOS
+let _sharedAudioCtx = null;
+const getAudioCtx = () => {
+  if (!_sharedAudioCtx || _sharedAudioCtx.state === "closed") {
+    _sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  return _sharedAudioCtx;
+};
+
 export function PitchDisplay({
   labelType,
   transposeIndex,
@@ -35,7 +44,7 @@ export function PitchDisplay({
     const oscillator = audioCtx.createOscillator();
     const gainNode = audioCtx.createGain();
 
-    oscillator.type = "sawtooth";
+    oscillator.type = "square";
     oscillator.frequency.value = freq;
 
     oscillator.connect(gainNode);
@@ -259,11 +268,7 @@ export function PitchDisplay({
   const totalHeight = NOTE_GRID.length * ROW_HEIGHT + 100; // Add 100px bottom padding
 
   return (
-    <div
-      className="pitch-display-root"
-      onClick={onToggle}
-      style={{ cursor: "pointer" }}
-    >
+    <div className="pitch-display-root">
       {/* Scrollable note grid */}
       <div className="pitch-display-wrap" ref={containerRef}>
         <div className="pitch-display-inner" style={{ height: totalHeight }}>
@@ -349,9 +354,28 @@ export function PitchDisplay({
 
       {/* Paused overlay */}
       {!active && (
-        <div className="pitch-paused-overlay">
+        <div className="pitch-paused-overlay" onClick={onToggle} style={{ cursor: "pointer" }}>
           <div className="play-icon" />
         </div>
+      )}
+
+      {/* Pause trigger zone - center area only */}
+      {active && (
+        <div 
+          className="pause-trigger-zone"
+          onClick={onToggle}
+          style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '200px',
+            height: '200px',
+            cursor: 'pointer',
+            zIndex: 8,
+            opacity: 0,
+          }}
+        />
       )}
     </div>
   );
