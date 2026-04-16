@@ -20,8 +20,8 @@ export function detectPitch(buffer, sampleRate) {
     cmndf[tau] = runningSum > 0 ? (d * tau) / runningSum : 1;
   }
 
-  // 搜尋範圍：C2 (65Hz) 到 C6 (1046Hz)
-  const minTau = Math.max(2, Math.floor(sampleRate / 1100));
+  // 搜尋範圍：C2 (65Hz) 到 C7 (2093Hz)
+  const minTau = Math.max(2, Math.floor(sampleRate / 2200));
   const maxTau = Math.min(halfN - 2, Math.ceil(sampleRate / 60));
 
   /**
