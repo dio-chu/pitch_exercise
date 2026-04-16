@@ -9,9 +9,10 @@ export function detectPitch(buffer, sampleRate) {
   const halfN = Math.floor(N / 2);
 
   // RMS check — bail if signal is too quiet
+  // Lower threshold for better mobile sensitivity
   let rmsSum = 0;
   for (let i = 0; i < N; i++) rmsSum += buffer[i] * buffer[i];
-  if (Math.sqrt(rmsSum / N) < 0.008) return null;
+  if (Math.sqrt(rmsSum / N) < 0.003) return null;
 
   // ── Step 1: Cumulative Mean Normalized Difference Function ──
   const cmndf = new Float32Array(halfN);
@@ -31,7 +32,7 @@ export function detectPitch(buffer, sampleRate) {
   // ── Step 2: Absolute threshold search (C2 ≈ 65 Hz to C7 ≈ 2093 Hz) ──
   const minTau = Math.max(2, Math.floor(sampleRate / 2200));
   const maxTau = Math.min(halfN - 2, Math.ceil(sampleRate / 60));
-  const THRESHOLD = 0.18;
+  const THRESHOLD = 0.15; // Lower threshold for better detection
 
   let tau = minTau;
   let tauCandidate = -1;
@@ -50,7 +51,10 @@ export function detectPitch(buffer, sampleRate) {
   if (tauCandidate === -1) {
     let bestVal = Infinity;
     for (let t = minTau; t < maxTau; t++) {
-      if (cmndf[t] < bestVal) { bestVal = cmndf[t]; tauCandidate = t; }
+      if (cmndf[t] < bestVal) {
+        bestVal = cmndf[t];
+        tauCandidate = t;
+      }
     }
     if (bestVal >= 0.45) return null; // too uncertain
   }

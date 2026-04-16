@@ -32,12 +32,16 @@ export function usePitchDetector(enabled) {
     let active = true;
     setMicError(null);
 
+    // Detect mobile devices
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
     navigator.mediaDevices
       .getUserMedia({
         audio: {
           echoCancellation: false,
           noiseSuppression: false,
-          autoGainControl: false,
+          autoGainControl: isMobile, // Enable on mobile for better sensitivity
+          sampleRate: 48000, // Request higher sample rate
         },
         video: false,
       })
