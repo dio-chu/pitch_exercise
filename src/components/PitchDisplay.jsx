@@ -27,6 +27,7 @@ export function PitchDisplay({
   transposeIndex,
   pitchInfo,
   active,
+  autoScroll,
   onToggle,
 }) {
   // Audio playback state
@@ -135,8 +136,16 @@ export function PitchDisplay({
 
   // ── Auto-follow detected pitch ──
   const prevMidi = useRef(null);
+  
+  // Reset prevMidi when autoScroll changes
   useEffect(() => {
-    if (!pitchInfo || !containerRef.current) return;
+    if (!autoScroll) {
+      prevMidi.current = null;
+    }
+  }, [autoScroll]);
+  
+  useEffect(() => {
+    if (!autoScroll || !pitchInfo || !containerRef.current) return;
     if (pitchInfo.midiRounded === prevMidi.current) return;
     prevMidi.current = pitchInfo.midiRounded;
 
@@ -146,7 +155,7 @@ export function PitchDisplay({
     if (y < el.scrollTop + pad || y > el.scrollTop + el.clientHeight - pad) {
       el.scrollTo({ top: y - el.clientHeight / 2, behavior: "smooth" });
     }
-  }, [pitchInfo?.midiRounded]);
+  }, [autoScroll, pitchInfo?.midiRounded]);
 
   // ── Canvas size ──
   useEffect(() => {

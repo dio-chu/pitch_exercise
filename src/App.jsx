@@ -10,6 +10,7 @@ export default function App() {
   const [labelType, setLabelType] = useState("western");
   const [transposeIndex, setTransposeIndex] = useState(0);
   const [detecting, setDetecting] = useState(true);
+  const [autoScroll, setAutoScroll] = useState(true);
 
   // ── RWD: drawer state ──
   const [isDesktop, setIsDesktop] = useState(
@@ -89,6 +90,7 @@ export default function App() {
           transposeIndex={transposeIndex}
           pitchInfo={detecting ? pitchInfo : null}
           active={detecting}
+          autoScroll={autoScroll}
           onToggle={() => setDetecting((v) => !v)}
         />
       </div>
@@ -102,6 +104,8 @@ export default function App() {
         setLabelType={setLabelType}
         transposeIndex={transposeIndex}
         setTransposeIndex={setTransposeIndex}
+        autoScroll={autoScroll}
+        setAutoScroll={setAutoScroll}
       />
 
       {/* ── Fix / Detect button ── */}

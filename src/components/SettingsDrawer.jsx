@@ -13,6 +13,8 @@ export function SettingsDrawer({
   setLabelType,
   transposeIndex,
   setTransposeIndex,
+  autoScroll,
+  setAutoScroll,
   isDesktop,
 }) {
   return (
@@ -44,6 +46,18 @@ export function SettingsDrawer({
           >
             ✕
           </button>
+        </div>
+
+        <div className="drawer-section">
+          <div className="drawer-section-title">Auto-Scroll:</div>
+          <label className={`radio-row${autoScroll ? " selected" : ""}`}>
+            <input
+              type="checkbox"
+              checked={autoScroll}
+              onChange={(e) => setAutoScroll(e.target.checked)}
+            />
+            <span>Follow Pitch</span>
+          </label>
         </div>
 
         <div className="drawer-section">

@@ -449,6 +449,12 @@ body,
   height: 15px;
   flex-shrink: 0;
 }
+.radio-row input[type="checkbox"] {
+  accent-color: var(--radio-accent);
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
 
 .transpose-list {
   display: flex;
