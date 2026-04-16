@@ -344,15 +344,23 @@ body,
   left: 0;
   height: 100vh;
   width: var(--drawer-w);
-  background: linear-gradient(135deg, #7c3aed 0%, #7c3aed 65%, #6d28d9 100%);
-  border-right: 1px solid var(--drawer-border);
+  background: linear-gradient(
+    135deg,
+    rgba(196, 181, 253, 0.95) 0%,
+    rgba(167, 139, 250, 0.92) 35%,
+    rgba(124, 58, 237, 0.88) 70%,
+    rgba(109, 40, 217, 0.75) 100%
+  );
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-right: 1px solid rgba(167, 139, 250, 0.3);
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
   z-index: 45;
   overflow-y: auto;
   transform: translateX(-100%);
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   scrollbar-width: thin;
-  scrollbar-color: #a78bfa #6d28d9;
+  scrollbar-color: rgba(167, 139, 250, 0.6) rgba(109, 40, 217, 0.3);
 }
 .settings-drawer.open {
   transform: translateX(0);
@@ -362,10 +370,10 @@ body,
   width: 6px;
 }
 .settings-drawer::-webkit-scrollbar-track {
-  background: #6d28d9;
+  background: rgba(109, 40, 217, 0.3);
 }
 .settings-drawer::-webkit-scrollbar-thumb {
-  background: #a78bfa;
+  background: rgba(167, 139, 250, 0.6);
   border-radius: 3px;
 }
 

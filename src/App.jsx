@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { PitchDisplay } from "./components/PitchDisplay";
 import { SettingsDrawer } from "./components/SettingsDrawer";
 import { usePitchDetector } from "./hooks/usePitchDetector";
-import { TRANSPOSE_OPTIONS } from "./utils/noteUtils";
+import { TRANSPOSE_OPTIONS, getTransposeLabel } from "./utils/noteUtils";
 
 const DESKTOP_BP = 768; // px
 
@@ -48,7 +48,10 @@ export default function App() {
         <div>
           <h1>Pitch Trainer</h1>
           <div className="header-subtitle">
-            {TRANSPOSE_OPTIONS[transposeIndex].label}
+            {getTransposeLabel(
+              TRANSPOSE_OPTIONS[transposeIndex].semitone,
+              labelType,
+            )}
           </div>
         </div>
         <div className="pitch-badge">

@@ -31,6 +31,25 @@ export const TRANSPOSE_OPTIONS = [
   { label: "Do = D\u266d C#", semitone: 1 },
 ];
 
+/**
+ * Generate transpose label based on label type
+ * @param {number} semitone - The semitone offset (0-11)
+ * @param {string} labelType - 'western', 'solfege', or 'number'
+ * @returns {string} - The formatted transpose label
+ */
+export function getTransposeLabel(semitone, labelType) {
+  const noteName = CHROMATIC_WESTERN[semitone];
+
+  if (labelType === "western") {
+    return `C = ${noteName}`;
+  } else if (labelType === "number") {
+    return `1 = ${noteName}`;
+  } else {
+    // solfege
+    return `Do = ${noteName}`;
+  }
+}
+
 export function frequencyToMidi(freq) {
   return 12 * Math.log2(freq / 440) + 69;
 }
