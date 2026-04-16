@@ -22,12 +22,19 @@ const getAudioCtx = () => {
   return _sharedAudioCtx;
 };
 
+const THEME_COLORS = {
+  default: { trail: "#b07ad4", current: "#e8189e" },
+  blue:    { trail: "#60a5fa", current: "#2563eb" },
+  dark:    { trail: "#6b7280", current: "#e5e7eb" },
+};
+
 export function PitchDisplay({
   labelType,
   transposeIndex,
   pitchInfo,
   active,
   autoScroll,
+  theme = "default",
   onToggle,
 }) {
   // Audio playback state
@@ -56,7 +63,7 @@ export function PitchDisplay({
     gainNodeRef.current = gainNode;
 
     audioCtx.resume().then(() => {
-      gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+      gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
       oscillator.start();
     });
   };
@@ -116,6 +123,7 @@ export function PitchDisplay({
   const historyRef = useRef([]); // [{midiFloat, cents, time}]
   const pitchInfoRef = useRef(pitchInfo);
   const activeRef = useRef(active);
+  const themeRef = useRef(theme);
 
   // Keep refs up-to-date without triggering effect re-runs
   useEffect(() => {
@@ -125,6 +133,9 @@ export function PitchDisplay({
     activeRef.current = active;
     if (!active) historyRef.current = []; // clear trail when paused
   }, [active]);
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
 
   // ── Scroll to C4 on mount ──
   useEffect(() => {
@@ -136,14 +147,14 @@ export function PitchDisplay({
 
   // ── Auto-follow detected pitch ──
   const prevMidi = useRef(null);
-  
+
   // Reset prevMidi when autoScroll changes
   useEffect(() => {
     if (!autoScroll) {
       prevMidi.current = null;
     }
   }, [autoScroll]);
-  
+
   useEffect(() => {
     if (!autoScroll || !pitchInfo || !containerRef.current) return;
     if (pitchInfo.midiRounded === prevMidi.current) return;
@@ -217,8 +228,8 @@ export function PitchDisplay({
       ctx.lineJoin = "round";
       ctx.lineCap = "round";
 
-      // Draw pitch history in blue
-      ctx.strokeStyle = "#3b82f6"; // blue
+      const colors = THEME_COLORS[themeRef.current] ?? THEME_COLORS.default;
+      ctx.strokeStyle = colors.trail;
       ctx.beginPath();
       let pathStarted = false;
 
@@ -257,7 +268,7 @@ export function PitchDisplay({
           ROW_HEIGHT / 2 -
           scrollTop;
         if (currentY >= -4 && currentY <= H + 4) {
-          ctx.strokeStyle = "#ff0000";
+          ctx.strokeStyle = colors.current;
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.moveTo(0, currentY);
@@ -279,11 +290,11 @@ export function PitchDisplay({
   return (
     <div className="pitch-display-root">
       {/* Scrollable note grid */}
-      <div 
-        className="pitch-display-wrap" 
+      <div
+        className="pitch-display-wrap"
         ref={containerRef}
         onClick={active ? onToggle : undefined}
-        style={{ cursor: active ? 'pointer' : 'default' }}
+        style={{ cursor: active ? "pointer" : "default" }}
       >
         <div className="pitch-display-inner" style={{ height: totalHeight }}>
           {NOTE_GRID.map(({ midi, semitone, octave }) => {

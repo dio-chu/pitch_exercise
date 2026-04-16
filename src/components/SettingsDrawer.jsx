@@ -6,6 +6,28 @@ const NOTE_LABEL_OPTIONS = [
   { value: "number", label: "1234567" },
 ];
 
+// Compact key names for transpose grid (flat notation for black keys)
+const KEY_LABELS = [
+  "C",
+  "B",
+  "B♭",
+  "A",
+  "A♭",
+  "G",
+  "G♭",
+  "F",
+  "E",
+  "E♭",
+  "D",
+  "D♭",
+];
+
+const THEME_OPTIONS = [
+  { value: "default", label: "Default", color: "#e8189e" },
+  { value: "blue", label: "Blue", color: "#3b82f6" },
+  { value: "dark", label: "Dark", color: "#6b7280" },
+];
+
 export function SettingsDrawer({
   open,
   onToggle,
@@ -15,11 +37,13 @@ export function SettingsDrawer({
   setTransposeIndex,
   autoScroll,
   setAutoScroll,
+  theme,
+  setTheme,
   isDesktop,
 }) {
   return (
     <>
-      {/* Toggle button — hidden on desktop when drawer is open (drawer header has close) */}
+      {/* Toggle button */}
       {(!open || !isDesktop) && (
         <button
           className="drawer-toggle"
@@ -48,6 +72,7 @@ export function SettingsDrawer({
           </button>
         </div>
 
+        {/* Auto-scroll */}
         <div className="drawer-section">
           <div className="drawer-section-title">Auto-Scroll:</div>
           <label className={`radio-row${autoScroll ? " selected" : ""}`}>
@@ -60,6 +85,7 @@ export function SettingsDrawer({
           </label>
         </div>
 
+        {/* Note Labels */}
         <div className="drawer-section">
           <div className="drawer-section-title">Note Labels:</div>
           {NOTE_LABEL_OPTIONS.map((opt) => (
@@ -79,25 +105,57 @@ export function SettingsDrawer({
           ))}
         </div>
 
+        {/* Transpose — inline 2-column grid */}
         <div className="drawer-section">
-          <div className="drawer-section-title">Transpose:</div>
-          <div className="transpose-list">
-            {TRANSPOSE_OPTIONS.map((opt, i) => (
-              <label
-                key={i}
-                className={`radio-row${transposeIndex === i ? " selected" : ""}`}
-              >
-                <input
-                  type="radio"
-                  name="transpose"
-                  value={i}
-                  checked={transposeIndex === i}
-                  onChange={() => setTransposeIndex(i)}
-                />
-                <span>{getTransposeLabel(opt.semitone, labelType)}</span>
-              </label>
-            ))}
+          <div className="transpose-inline">
+            <div className="drawer-section-title">
+              {
+                getTransposeLabel(
+                  TRANSPOSE_OPTIONS[transposeIndex].semitone,
+                  labelType,
+                ).split(" = ")[0]
+              }{" "}
+              =
+            </div>
+            <div className="transpose-grid">
+              {TRANSPOSE_OPTIONS.map((opt, i) => (
+                <label
+                  key={i}
+                  className={`transpose-cell${transposeIndex === i ? " selected" : ""}`}
+                >
+                  <input
+                    type="radio"
+                    name="transpose"
+                    value={i}
+                    checked={transposeIndex === i}
+                    onChange={() => setTransposeIndex(i)}
+                  />
+                  <span>{KEY_LABELS[i]}</span>
+                </label>
+              ))}
+            </div>
           </div>
+        </div>
+
+        {/* Theme */}
+        <div className="drawer-section">
+          <div className="drawer-section-title">Theme:</div>
+          {THEME_OPTIONS.map((opt) => (
+            <label
+              key={opt.value}
+              className={`radio-row${theme === opt.value ? " selected" : ""}`}
+            >
+              <input
+                type="radio"
+                name="theme"
+                value={opt.value}
+                checked={theme === opt.value}
+                onChange={() => setTheme(opt.value)}
+              />
+              <span className="theme-dot" style={{ background: opt.color }} />
+              <span>{opt.label}</span>
+            </label>
+          ))}
         </div>
       </aside>
     </>

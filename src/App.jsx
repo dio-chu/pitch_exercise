@@ -11,6 +11,7 @@ export default function App() {
   const [transposeIndex, setTransposeIndex] = useState(0);
   const [detecting, setDetecting] = useState(true);
   const [autoScroll, setAutoScroll] = useState(true);
+  const [theme, setTheme] = useState("default");
 
   // ── RWD: drawer state ──
   const [isDesktop, setIsDesktop] = useState(
@@ -40,7 +41,7 @@ export default function App() {
   const contentShift = drawerOpen && isDesktop;
 
   return (
-    <div className="app">
+    <div className="app" data-theme={theme}>
       {/* ── Header ── */}
       <header
         className="app-header"
@@ -91,6 +92,7 @@ export default function App() {
           pitchInfo={detecting ? pitchInfo : null}
           active={detecting}
           autoScroll={autoScroll}
+          theme={theme}
           onToggle={() => setDetecting((v) => !v)}
         />
       </div>
@@ -106,6 +108,8 @@ export default function App() {
         setTransposeIndex={setTransposeIndex}
         autoScroll={autoScroll}
         setAutoScroll={setAutoScroll}
+        theme={theme}
+        setTheme={setTheme}
       />
 
       {/* ── Fix / Detect button ── */}
