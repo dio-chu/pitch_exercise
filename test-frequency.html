@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>頻率檢測測試</title>
+    <style>
+      body {
+        font-family: "Courier New", monospace;
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+        background: #faf8ff;
+      }
+      h1 {
+        color: #7c3aed;
+      }
+      .test-section {
+        background: white;
+        padding: 20px;
+        margin: 20px 0;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .test-row {
+        padding: 8px;
+        border-bottom: 1px solid #e5e7eb;
+        display: grid;
+        grid-template-columns: 150px 150px 150px 1fr;
+        gap: 10px;
+        font-size: 14px;
+      }
+      .test-row:last-child {
+        border-bottom: none;
+      }
+      .header {
+        font-weight: bold;
+        background: #f3f4f6;
+      }
+      .pass {
+        color: #059669;
+      }
+      .fail {
+        color: #dc2626;
+      }
+      button {
+        background: linear-gradient(135deg, #8b5cf6, #c084fc);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        margin: 5px;
+      }
+      button:hover {
+        opacity: 0.9;
+      }
+      .controls {
+        margin: 20px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🎵 頻率檢測測試工具</h1>
+
+    <div class="test-section">
+      <h2>1️⃣ 函數驗證測試</h2>
+      <div class="test-row header">
+        <div>音符</div>
+        <div>MIDI</div>
+        <div>頻率 (Hz)</div>
+        <div>狀態</div>
+      </div>
+      <div id="function-tests"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>2️⃣ 互逆函數測試</h2>
+      <div class="test-row header">
+        <div>輸入 MIDI</div>
+        <div>→ 頻率</div>
+        <div>→ MIDI</div>
+        <div>誤差</div>
+      </div>
+      <div id="inverse-tests"></div>
+    </div>
+
+    <div class="test-section">
+      <h2>3️⃣ 音頻播放測試</h2>
+      <p>點擊按鈕播放音符，並確認頻率顯示是否正確</p>
+      <div class="controls" id="play-controls"></div>
+    </div>
+
+    <script>
+      // 複製自 noteUtils.js
+      function frequencyToMidi(freq) {
+        return 12 * Math.log2(freq / 440) + 69;
+      }
+
+      function midiToFrequency(midi) {
+        return 440 * Math.pow(2, (midi - 69) / 12);
+      }
+
+      // 已知的標準值
+      const knownValues = [
+        { note: "A0", midi: 21, freq: 27.5 },
+        { note: "C2", midi: 36, freq: 65.406 },
+        { note: "A2", midi: 45, freq: 110.0 },
+        { note: "C3", midi: 48, freq: 130.813 },
+        { note: "A3", midi: 57, freq: 220.0 },
+        { note: "C4", midi: 60, freq: 261.626 },
+        { note: "A4", midi: 69, freq: 440.0 },
+        { note: "C5", midi: 72, freq: 523.251 },
+        { note: "A5", midi: 81, freq: 880.0 },
+        { note: "C6", midi: 84, freq: 1046.502 },
+        { note: "C7", midi: 96, freq: 2093.005 },
+      ];
+
+      // 測試 1: 函數驗證
+      const functionTestsDiv = document.getElementById("function-tests");
+      knownValues.forEach(({ note, midi, freq }) => {
+        const calculated = midiToFrequency(midi);
+        const error = Math.abs(calculated - freq);
+        const pass = error < 0.01;
+
+        const row = document.createElement("div");
+        row.className = "test-row";
+        row.innerHTML = `
+        <div>${note}</div>
+        <div>${midi}</div>
+        <div>${calculated.toFixed(3)} (預期: ${freq.toFixed(3)})</div>
+        <div class="${pass ? "pass" : "fail"}">${pass ? "✓ 通過" : `✗ 誤差: ${error.toFixed(3)} Hz`}</div>
+      `;
+        functionTestsDiv.appendChild(row);
+      });
+
+      // 測試 2: 互逆函數
+      const inverseTestsDiv = document.getElementById("inverse-tests");
+      [36, 48, 60, 69, 72, 84, 96].forEach((originalMidi) => {
+        const freq = midiToFrequency(originalMidi);
+        const backToMidi = frequencyToMidi(freq);
+        const error = Math.abs(backToMidi - originalMidi);
+        const pass = error < 0.0001;
+
+        const row = document.createElement("div");
+        row.className = "test-row";
+        row.innerHTML = `
+        <div>${originalMidi}</div>
+        <div>${freq.toFixed(3)} Hz</div>
+        <div>${backToMidi.toFixed(6)}</div>
+        <div class="${pass ? "pass" : "fail"}">${pass ? "✓ 完美" : `✗ 誤差: ${error.toFixed(6)}`}</div>
+      `;
+        inverseTestsDiv.appendChild(row);
+      });
+
+      // 測試 3: 音頻播放
+      const playControlsDiv = document.getElementById("play-controls");
+      const testNotes = [
+        { note: "C4", midi: 60 },
+        { note: "E4", midi: 64 },
+        { note: "G4", midi: 67 },
+        { note: "A4", midi: 69 },
+        { note: "C5", midi: 72 },
+      ];
+
+      testNotes.forEach(({ note, midi }) => {
+        const btn = document.createElement("button");
+        const freq = midiToFrequency(midi);
+        btn.textContent = `${note} (MIDI ${midi}, ${freq.toFixed(1)} Hz)`;
+        btn.onclick = () => playNote(midi, freq);
+        playControlsDiv.appendChild(btn);
+      });
+
+      function playNote(midi, expectedFreq) {
+        const audioCtx = new (
+          window.AudioContext || window.webkitAudioContext
+        )();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        const actualFreq = midiToFrequency(midi);
+        oscillator.type = "sine";
+        oscillator.frequency.value = actualFreq;
+
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(
+          0.01,
+          audioCtx.currentTime + 1.0,
+        );
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 1.0);
+
+        console.log(
+          `Playing MIDI ${midi}: Expected ${expectedFreq.toFixed(3)} Hz, Actual ${actualFreq.toFixed(3)} Hz`,
+        );
+
+        setTimeout(() => audioCtx.close(), 1100);
+      }
+
+      // 總結
+      console.log("✅ 所有測試完成！檢查頁面查看結果。");
+    </script>
+  </body>
+</html>
