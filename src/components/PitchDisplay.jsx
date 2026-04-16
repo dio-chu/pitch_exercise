@@ -354,7 +354,7 @@ export function PitchDisplay({
 
       {/* Paused overlay */}
       {!active && (
-        <div className="pitch-paused-overlay" onClick={onToggle} style={{ cursor: "pointer" }}>
+        <div className="pitch-paused-overlay" onClick={onToggle}>
           <div className="play-icon" />
         </div>
       )}

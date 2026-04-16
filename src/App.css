@@ -150,10 +150,10 @@ body,
   inset: 0;
   background: rgba(139, 92, 246, 0.15);
   z-index: 10;
-  pointer-events: none;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
 }
 
 .play-icon {
@@ -164,6 +164,7 @@ body,
   border-color: transparent transparent transparent #ffffff;
   filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.25));
   opacity: 0.95;
+  pointer-events: none;
 }
 
 /* ── Note rows ────────────────────────────────────────────────── */
