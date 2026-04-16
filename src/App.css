@@ -344,7 +344,7 @@ body,
   left: 0;
   height: 100vh;
   width: var(--drawer-w);
-  background: linear-gradient(180deg, #7c3aed 0%, #6d28d9 100%);
+  background: linear-gradient(135deg, #7c3aed 0%, #7c3aed 65%, #6d28d9 100%);
   border-right: 1px solid var(--drawer-border);
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
   z-index: 45;

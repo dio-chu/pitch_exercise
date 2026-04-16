@@ -45,7 +45,6 @@ export default function App() {
         className="app-header"
         style={{ paddingLeft: contentShift ? 220 + 20 : undefined }}
       >
-        {detecting && pitchInfo && <span className="listening-dot" />}
         <div>
           <h1>Pitch Trainer</h1>
           <div className="header-subtitle">
@@ -62,12 +61,14 @@ export default function App() {
               </span>
             </>
           ) : (
-            <span
-              className="badge-freq"
-              style={{ color: "#8b5cf6", fontSize: 13 }}
-            >
-              {detecting ? "Listening…" : "Paused"}
-            </span>
+            !detecting && (
+              <span
+                className="badge-freq"
+                style={{ color: "#8b5cf6", fontSize: 13 }}
+              >
+                Paused
+              </span>
+            )
           )}
         </div>
       </header>

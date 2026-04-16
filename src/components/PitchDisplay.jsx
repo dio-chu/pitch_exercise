@@ -119,7 +119,8 @@ export function PitchDisplay({
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
-    el.scrollTop = (TOP_MIDI - 60) * ROW_HEIGHT - el.clientHeight / 2;
+    el.scrollTop =
+      (TOP_MIDI - 60) * ROW_HEIGHT + ROW_HEIGHT / 2 - el.clientHeight / 2;
   }, []);
 
   // ── Auto-follow detected pitch ──
@@ -130,7 +131,7 @@ export function PitchDisplay({
     prevMidi.current = pitchInfo.midiRounded;
 
     const el = containerRef.current;
-    const y = (TOP_MIDI - pitchInfo.midiFloat) * ROW_HEIGHT;
+    const y = (TOP_MIDI - pitchInfo.midiFloat) * ROW_HEIGHT + ROW_HEIGHT / 2;
     const pad = 100;
     if (y < el.scrollTop + pad || y > el.scrollTop + el.clientHeight - pad) {
       el.scrollTo({ top: y - el.clientHeight / 2, behavior: "smooth" });
@@ -212,7 +213,8 @@ export function PitchDisplay({
         }
 
         const x = W - ((now - pt.time) / HISTORY_MS) * W;
-        const y = (TOP_MIDI - pt.midiFloat) * ROW_HEIGHT - scrollTop;
+        const y =
+          (TOP_MIDI - pt.midiFloat) * ROW_HEIGHT + ROW_HEIGHT / 2 - scrollTop;
 
         // Skip if out of bounds
         if (y < -4 || y > H + 4) {
@@ -232,7 +234,9 @@ export function PitchDisplay({
       // Draw red horizontal indicator at current pitch
       if (activeRef.current && pitchInfoRef.current) {
         const currentY =
-          (TOP_MIDI - pitchInfoRef.current.midiFloat) * ROW_HEIGHT - scrollTop;
+          (TOP_MIDI - pitchInfoRef.current.midiFloat) * ROW_HEIGHT +
+          ROW_HEIGHT / 2 -
+          scrollTop;
         if (currentY >= -4 && currentY <= H + 4) {
           ctx.strokeStyle = "#ff0000";
           ctx.lineWidth = 2;
@@ -251,7 +255,7 @@ export function PitchDisplay({
   }, []);
 
   const transposeOffset = TRANSPOSE_OPTIONS[transposeIndex].semitone;
-  const totalHeight = NOTE_GRID.length * ROW_HEIGHT;
+  const totalHeight = NOTE_GRID.length * ROW_HEIGHT + 100; // Add 100px bottom padding
 
   return (
     <div
