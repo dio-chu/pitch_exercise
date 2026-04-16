@@ -138,6 +138,9 @@
 [data-theme="dark"] .drawer-section-title {
   color: #9ca3af;
 }
+[data-theme="dark"] .settings-drawer {
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
+}
 
 html,
 body,
@@ -471,7 +474,7 @@ body,
   );
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-right: 1px solid rgba(167, 139, 250, 0.3);
+  border-right: 1px solid var(--drawer-border);
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
   z-index: 45;
   overflow-y: auto;

@@ -131,7 +131,6 @@ export function PitchDisplay({
   }, [pitchInfo]);
   useEffect(() => {
     activeRef.current = active;
-    if (!active) historyRef.current = []; // clear trail when paused
   }, [active]);
   useEffect(() => {
     themeRef.current = theme;

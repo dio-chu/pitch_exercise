@@ -69,7 +69,7 @@ export default function App() {
             !detecting && (
               <span
                 className="badge-freq"
-                style={{ color: "#8b5cf6", fontSize: 13 }}
+                style={{ fontSize: 13 }}
               >
                 Paused
               </span>
