@@ -22,10 +22,15 @@ const KEY_LABELS = [
   "D♭",
 ];
 
-const THEME_OPTIONS = [
-  { value: "default", label: "Default", color: "#e8189e" },
-  { value: "blue", label: "Blue", color: "#3b82f6" },
-  { value: "dark", label: "Dark", color: "#6b7280" },
+const THEME_KEYS = [
+  { value: "default", tKey: "themeDefault", color: "#e8189e" },
+  { value: "blue",    tKey: "themeBlue",    color: "#3b82f6" },
+  { value: "dark",    tKey: "themeDark",    color: "#6b7280" },
+];
+
+const LANG_OPTIONS = [
+  { value: "zh", label: "中文" },
+  { value: "en", label: "English" },
 ];
 
 export function SettingsDrawer({
@@ -39,6 +44,9 @@ export function SettingsDrawer({
   setAutoScroll,
   theme,
   setTheme,
+  lang,
+  setLang,
+  t,
   isDesktop,
 }) {
   return (
@@ -51,7 +59,7 @@ export function SettingsDrawer({
           aria-label="Open settings"
         >
           <span className="drawer-toggle-icon">▶</span>
-          <span className="drawer-toggle-text">Settings</span>
+          <span className="drawer-toggle-text">{t.settings}</span>
         </button>
       )}
 
@@ -62,7 +70,7 @@ export function SettingsDrawer({
 
       <aside className={`settings-drawer${open ? " open" : ""}`}>
         <div className="drawer-header">
-          <span>Settings</span>
+          <span>{t.settings}</span>
           <button
             className="drawer-close"
             onClick={onToggle}
@@ -74,20 +82,20 @@ export function SettingsDrawer({
 
         {/* Auto-scroll */}
         <div className="drawer-section">
-          <div className="drawer-section-title">Auto-Scroll:</div>
+          <div className="drawer-section-title">{t.autoScroll}</div>
           <label className={`radio-row${autoScroll ? " selected" : ""}`}>
             <input
               type="checkbox"
               checked={autoScroll}
               onChange={(e) => setAutoScroll(e.target.checked)}
             />
-            <span>Follow Pitch</span>
+            <span>{t.followPitch}</span>
           </label>
         </div>
 
         {/* Note Labels */}
         <div className="drawer-section">
-          <div className="drawer-section-title">Note Labels:</div>
+          <div className="drawer-section-title">{t.noteLabels}</div>
           {NOTE_LABEL_OPTIONS.map((opt) => (
             <label
               key={opt.value}
@@ -139,8 +147,8 @@ export function SettingsDrawer({
 
         {/* Theme */}
         <div className="drawer-section">
-          <div className="drawer-section-title">Theme:</div>
-          {THEME_OPTIONS.map((opt) => (
+          <div className="drawer-section-title">{t.theme}</div>
+          {THEME_KEYS.map((opt) => (
             <label
               key={opt.value}
               className={`radio-row${theme === opt.value ? " selected" : ""}`}
@@ -153,9 +161,31 @@ export function SettingsDrawer({
                 onChange={() => setTheme(opt.value)}
               />
               <span className="theme-dot" style={{ background: opt.color }} />
-              <span>{opt.label}</span>
+              <span>{t[opt.tKey]}</span>
             </label>
           ))}
+        </div>
+
+        {/* Language */}
+        <div className="drawer-section">
+          <div className="drawer-section-title">{t.language}</div>
+          <div className="transpose-grid">
+            {LANG_OPTIONS.map((opt) => (
+              <label
+                key={opt.value}
+                className={`transpose-cell${lang === opt.value ? " selected" : ""}`}
+              >
+                <input
+                  type="radio"
+                  name="lang"
+                  value={opt.value}
+                  checked={lang === opt.value}
+                  onChange={() => setLang(opt.value)}
+                />
+                <span>{opt.label}</span>
+              </label>
+            ))}
+          </div>
         </div>
       </aside>
     </>

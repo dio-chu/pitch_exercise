@@ -3,6 +3,7 @@ import { PitchDisplay } from "./components/PitchDisplay";
 import { SettingsDrawer } from "./components/SettingsDrawer";
 import { usePitchDetector } from "./hooks/usePitchDetector";
 import { TRANSPOSE_OPTIONS, getTransposeLabel } from "./utils/noteUtils";
+import { useT } from "./utils/i18n";
 
 const DESKTOP_BP = 768; // px
 
@@ -12,6 +13,8 @@ export default function App() {
   const [detecting, setDetecting] = useState(true);
   const [autoScroll, setAutoScroll] = useState(true);
   const [theme, setTheme] = useState("default");
+  const [lang, setLang] = useState("zh");
+  const t = useT(lang);
 
   // ── RWD: drawer state ──
   const [isDesktop, setIsDesktop] = useState(
@@ -48,7 +51,7 @@ export default function App() {
         style={{ paddingLeft: contentShift ? 220 + 20 : undefined }}
       >
         <div>
-          <h1>Pitch Trainer</h1>
+          <h1>{t.appTitle}</h1>
           <div className="header-subtitle">
             {getTransposeLabel(
               TRANSPOSE_OPTIONS[transposeIndex].semitone,
@@ -71,7 +74,7 @@ export default function App() {
                 className="badge-freq"
                 style={{ fontSize: 13 }}
               >
-                Paused
+                {t.paused}
               </span>
             )
           )}
@@ -110,6 +113,9 @@ export default function App() {
         setAutoScroll={setAutoScroll}
         theme={theme}
         setTheme={setTheme}
+        lang={lang}
+        setLang={setLang}
+        t={t}
       />
 
       {/* ── Fix / Detect button ── */}
@@ -119,10 +125,10 @@ export default function App() {
       >
         {detecting ? (
           <>
-            <span className="btn-dot" /> Fix
+            <span className="btn-dot" /> {t.fix}
           </>
         ) : (
-          <>▶ Detect</>
+          <>▶ {t.detect}</>
         )}
       </button>
 
