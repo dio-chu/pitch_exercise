@@ -326,11 +326,23 @@ export default function MusicGame() {
 
     // Scale patterns: ascending / descending / mixed runs of 3-4 cols
     const SCALE_PATTERNS = [
-      [0,1,2], [1,2,3], [2,3,4], [3,4,5], [4,5,6],   // ascending 3
-      [2,1,0], [3,2,1], [4,3,2], [5,4,3], [6,5,4],   // descending 3
-      [0,1,2,3], [3,4,5,6],                             // ascending 4
-      [3,2,1,0], [6,5,4,3],                             // descending 4
-      [0,2,4], [1,3,5], [2,4,6],                        // skip-one (C-E-G feel)
+      [0, 1, 2],
+      [1, 2, 3],
+      [2, 3, 4],
+      [3, 4, 5],
+      [4, 5, 6], // ascending 3
+      [2, 1, 0],
+      [3, 2, 1],
+      [4, 3, 2],
+      [5, 4, 3],
+      [6, 5, 4], // descending 3
+      [0, 1, 2, 3],
+      [3, 4, 5, 6], // ascending 4
+      [3, 2, 1, 0],
+      [6, 5, 4, 3], // descending 4
+      [0, 2, 4],
+      [1, 3, 5],
+      [2, 4, 6], // skip-one (C-E-G feel)
     ];
 
     const s = {
@@ -339,14 +351,14 @@ export default function MusicGame() {
       bullets: [],
       blocks: [],
       exps: [],
-      burst: [],     // { col, countdown, chr } — queued burst blocks
+      burst: [], // { col, countdown, chr } — queued burst blocks
       score: 0,
       lives: 3,
       frame: 0,
       lastShot: -60,
       shotRate: 52,
       blkRate: 90,
-      blkSpeed: 1.0,
+      blkSpeed: 1,
       over: false,
     };
 
@@ -454,23 +466,42 @@ export default function MusicGame() {
         const chrSTs = [1, 3, 6, 8, 10];
         const st = chrSTs[Math.floor(Math.random() * chrSTs.length)];
         const fc = stToFC(st);
-        s.blocks.push({ chr:true, fc, screenX:fcToX(fc), y:PLAY_TOP+LABEL_H, alive:true, bw:CBLK_W, bh:CBLK_H, pts:20 });
+        s.blocks.push({
+          chr: true,
+          fc,
+          screenX: fcToX(fc),
+          y: PLAY_TOP + LABEL_H,
+          alive: true,
+          bw: CBLK_W,
+          bh: CBLK_H,
+          pts: 20,
+        });
       } else {
-        s.blocks.push({ chr:false, fc:col, screenX:fcToX(col), y:PLAY_TOP+LABEL_H, alive:true, bw:DBLK_W, bh:DBLK_H, pts:10 });
+        s.blocks.push({
+          chr: false,
+          fc: col,
+          screenX: fcToX(col),
+          y: PLAY_TOP + LABEL_H,
+          alive: true,
+          bw: DBLK_W,
+          bh: DBLK_H,
+          pts: 10,
+        });
       }
     }
 
     function spawnBlock() {
       const rand = Math.random();
-      if (rand < 0.08) {
-        // Chromatic (8%) — occasional sharp
+      if (rand < 0.025) {
+        // Chromatic (2.5%) — occasional sharp
         pushBlock(0, true);
       } else if (rand < 0.38) {
         // Scale burst (30%) — pick a run pattern, fire 1 now, queue the rest
-        const pat = SCALE_PATTERNS[Math.floor(Math.random() * SCALE_PATTERNS.length)];
+        const pat =
+          SCALE_PATTERNS[Math.floor(Math.random() * SCALE_PATTERNS.length)];
         pushBlock(pat[0], false);
         pat.slice(1).forEach((col, i) => {
-          s.burst.push({ col, countdown: (i + 1) * 14 }); // ~14 frames apart ≈ 0.23 s each
+          s.burst.push({ col, countdown: (i + 1) * 40 }); // ~40 frames apart ≈ 0.67 s each
         });
       } else {
         // Single random diatonic (62%)
@@ -606,23 +637,28 @@ export default function MusicGame() {
   return (
     <div style={S.wrap}>
       {/* Outer clip wrapper — shrinks on mobile via scale */}
-      <div style={{
-        position: "relative",
-        width: CANVAS_W * scale,
-        height: GAME_H * scale,
-        border: "2px solid #13133a",
-        boxShadow: "0 0 40px rgba(0,100,255,0.15), 0 0 80px rgba(0,30,100,0.1)",
-        overflow: "hidden",
-        flexShrink: 0,
-      }}>
+      <div
+        style={{
+          position: "relative",
+          width: CANVAS_W * scale,
+          height: GAME_H * scale,
+          border: "2px solid #13133a",
+          boxShadow:
+            "0 0 40px rgba(0,100,255,0.15), 0 0 80px rgba(0,30,100,0.1)",
+          overflow: "hidden",
+          flexShrink: 0,
+        }}
+      >
         {/* Inner scaled content */}
-        <div style={{
-          transform: `scale(${scale})`,
-          transformOrigin: "top left",
-          position: "absolute",
-          width: CANVAS_W,
-          height: GAME_H,
-        }}>
+        <div
+          style={{
+            transform: `scale(${scale})`,
+            transformOrigin: "top left",
+            position: "absolute",
+            width: CANVAS_W,
+            height: GAME_H,
+          }}
+        >
           <canvas
             ref={canvasRef}
             width={CANVAS_W}
@@ -667,7 +703,11 @@ export default function MusicGame() {
                           style={{
                             ...S.bRow,
                             color:
-                              i === 0 ? "#ffee22" : i < 3 ? "#00eeff" : "#556688",
+                              i === 0
+                                ? "#ffee22"
+                                : i < 3
+                                  ? "#00eeff"
+                                  : "#556688",
                           }}
                         >
                           <span style={S.bRank}>{i + 1}.</span>
@@ -760,8 +800,14 @@ export default function MusicGame() {
 
       {/* ── FAB: back to Pitch Trainer ── */}
       <a href="#/" style={S.fab} title="Pitch Trainer">
-        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="currentColor"
+        >
+          <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
         </svg>
       </a>
     </div>
