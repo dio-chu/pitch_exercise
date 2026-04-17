@@ -7,14 +7,12 @@ export function usePitchDetector(enabled) {
   const [micError, setMicError] = useState(null);
   const rafRef = useRef(null);
   const ctxRef = useRef(null);
-  const sourceRef = useRef(null);
-  const streamRef = useRef(null);
 
   const prevFreqRef = useRef(null);
   const smoothBufferRef = useRef([]);
-  const SMOOTH_WINDOW = 5;   // 取最近 5 幀（≈83ms），兼顧穩定與反應速度
-  const MIN_READINGS = 3;    // 至少累積 3 幀才輸出（≈50ms），可過濾開口誤判又不會太慢
-  const MAX_SPREAD_ST = 2.0; // 放寬散布容忍度，換音過渡時不會卡太久
+  const SMOOTH_WINDOW = 5; // 取最近 3 幀（≈50ms），兼顧穩定與反應速度
+  const MIN_READINGS = 2; // 至少累積 3 幀才輸出（≈50ms），可過濾開口誤判又不會太慢
+  const MAX_SPREAD_ST = 1.5; // 放寬散布容忍度，換音過渡時不會卡太久
 
   useEffect(() => {
     if (!enabled) {
@@ -30,7 +28,7 @@ export function usePitchDetector(enabled) {
         audio: {
           echoCancellation: false,
           noiseSuppression: false,
-          autoGainControl: true,
+          autoGainControl: false,
         },
         video: false,
       })
@@ -48,6 +46,9 @@ export function usePitchDetector(enabled) {
           if (!active) return;
           analyser.getFloatTimeDomainData(buffer);
           let freq = detectPitch(buffer, ctx.sampleRate);
+
+          // 人聲下限：C2 ≈ 65.41 Hz，低於此視為雜訊
+          if (freq !== null && freq < 65.41) freq = null;
 
           if (freq !== null) {
             if (prevFreqRef.current !== null) {
