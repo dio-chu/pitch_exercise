@@ -4,10 +4,29 @@ import { SettingsDrawer } from "./components/SettingsDrawer";
 import { usePitchDetector } from "./hooks/usePitchDetector";
 import { TRANSPOSE_OPTIONS, getTransposeLabel } from "./utils/noteUtils";
 import { useT } from "./utils/i18n";
+import MusicGame from "./components/MusicGame";
 
 const DESKTOP_BP = 768; // px
 
+// ── Simple hash router ────────────────────────────────────────────────────
+function useHash() {
+  const [hash, setHash] = useState(() => window.location.hash);
+  useEffect(() => {
+    const handler = () => setHash(window.location.hash);
+    window.addEventListener("hashchange", handler);
+    return () => window.removeEventListener("hashchange", handler);
+  }, []);
+  return hash;
+}
+
+// ── Router ───────────────────────────────────────────────────────────────
 export default function App() {
+  const hash = useHash();
+  return hash === "#/game" ? <MusicGame /> : <PitchTrainer />;
+}
+
+// ── Main trainer page ────────────────────────────────────────────────────
+function PitchTrainer() {
   const [labelType, setLabelType] = useState("western");
   const [transposeIndex, setTransposeIndex] = useState(0);
   const [detecting, setDetecting] = useState(true);
@@ -29,8 +48,8 @@ export default function App() {
     const handler = (e) => {
       setIsDesktop(e.matches);
       if (e.matches)
-        setDrawerOpen(true); // auto-open on widen
-      else setDrawerOpen(false); // auto-close on narrow
+        setDrawerOpen(true);
+      else setDrawerOpen(false);
     };
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
@@ -70,10 +89,7 @@ export default function App() {
             </>
           ) : (
             !detecting && (
-              <span
-                className="badge-freq"
-                style={{ fontSize: 13 }}
-              >
+              <span className="badge-freq" style={{ fontSize: 13 }}>
                 {t.paused}
               </span>
             )
@@ -134,6 +150,35 @@ export default function App() {
 
       {/* ── Mic error toast ── */}
       {micError && <div className="mic-error">🎤 {micError}</div>}
+
+      {/* ── FAB: go to Game ── */}
+      <a
+        href="#/game"
+        title="Pitch Blaster"
+        style={{
+          position: "fixed",
+          bottom: 20,
+          right: 130,
+          width: 48,
+          height: 48,
+          borderRadius: "50%",
+          background: "#0d0d24",
+          border: "2px solid #33ffaa",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          textDecoration: "none",
+          color: "#33ffaa",
+          boxShadow: "0 0 14px #33ffaa33",
+          zIndex: 200,
+          cursor: "pointer",
+          userSelect: "none",
+        }}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M17 4H7C4.24 4 2 6.24 2 9v6c0 2.76 2.24 5 5 5 1.33 0 2.53-.52 3.43-1.37L12 17l1.57 1.63A4.97 4.97 0 0 0 17 20c2.76 0 5-2.24 5-5V9c0-2.76-2.24-5-5-5zm-7 9H8v2H6v-2H4v-2h2V9h2v2h2v2zm4.5 1a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm2-3a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/>
+        </svg>
+      </a>
     </div>
   );
 }

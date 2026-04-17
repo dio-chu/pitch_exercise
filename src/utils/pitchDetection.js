@@ -5,7 +5,7 @@ export function detectPitch(buffer, sampleRate) {
   let rmsSum = 0;
   for (let i = 0; i < N; i++) rmsSum += buffer[i] * buffer[i];
   const rms = Math.sqrt(rmsSum / N);
-  if (rms < 0.001) return null; // 放寬門檻，避免短音節或弱音被靜音過濾掉
+  if (rms < 0.0005) return null; // 放寬門檻，避免短音節或弱音被靜音過濾掉
 
   const cmndf = new Float32Array(halfN);
   cmndf[0] = 1;
