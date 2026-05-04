@@ -23,9 +23,9 @@ const KEY_LABELS = [
 ];
 
 const THEME_KEYS = [
-  { value: "default", tKey: "themeDefault", color: "#e8189e" },
+  { value: "default", tKey: "themeDefault", color: "#9ca3af" },
   { value: "blue",    tKey: "themeBlue",    color: "#3b82f6" },
-  { value: "dark",    tKey: "themeDark",    color: "#6b7280" },
+  { value: "purple",  tKey: "themePurple",  color: "#a855f7" },
 ];
 
 const LANG_OPTIONS = [

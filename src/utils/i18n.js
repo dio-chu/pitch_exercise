@@ -10,9 +10,9 @@ export const TRANSLATIONS = {
     noteLabels: "音名顯示",
     theme: "主題",
     language: "語言",
-    themeDefault: "預設",
+    themeDefault: "深色",
     themeBlue: "藍色",
-    themeDark: "深色",
+    themePurple: "紫色",
   },
   en: {
     appTitle: "Pitch Trainer",
@@ -25,9 +25,9 @@ export const TRANSLATIONS = {
     noteLabels: "Note Labels",
     theme: "Theme",
     language: "Language",
-    themeDefault: "Default",
+    themeDefault: "Dark",
     themeBlue: "Blue",
-    themeDark: "Dark",
+    themePurple: "Purple",
   },
 };
 

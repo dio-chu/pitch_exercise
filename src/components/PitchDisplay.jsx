@@ -23,9 +23,9 @@ const getAudioCtx = () => {
 };
 
 const THEME_COLORS = {
-  default: { trail: "#b07ad4", current: "#e8189e" },
+  default: { trail: "#6b7280", current: "#e5e7eb" },
   blue:    { trail: "#60a5fa", current: "#2563eb" },
-  dark:    { trail: "#6b7280", current: "#e5e7eb" },
+  purple:  { trail: "#a78bfa", current: "#8b5cf6" },
 };
 
 export function PitchDisplay({

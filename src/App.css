@@ -8,7 +8,38 @@
 }
 
 :root {
-  /* ── Kuromi (default) theme ─────────────────────────────────── */
+  /* ── Dark (default) theme ───────────────────────────────────── */
+  --app-bg: #111827;
+  --display-bg: #1f2937;
+  --shell-bg: #030712;
+  --drawer-bg: #111827;
+  --drawer-border: #374151;
+  --text-light: #f9fafb;
+  --text-muted: #9ca3af;
+  --radio-accent: #9ca3af;
+  --item-hover: #1f2937;
+  --scrollbar-track: #1f2937;
+  --scrollbar-thumb: #374151;
+  --badge-freq-color: #e5e7eb;
+  --badge-cents-bg: #374151;
+  --drawer-w: 220px;
+  --header-title: #f9fafb;
+  --drawer-header-text: #9ca3af;
+  --drawer-close: #6b7280;
+  --drawer-close-hover: #f9fafb;
+  --drawer-close-hover-bg: #374151;
+
+  --c-line: #f9fafb;
+  --c-label: #f9fafb;
+  --diatonic-line: #6b7280;
+  --diatonic-label: #9ca3af;
+  --chromatic-line: #374151;
+  --canvas-trail: #6b7280;
+  --canvas-current: #e5e7eb;
+}
+
+/* ── Purple (Kuromi) theme ──────────────────────────────────── */
+[data-theme="purple"] {
   --app-bg: #ede0f5;
   --display-bg: #faf5ff;
   --shell-bg: #160820;
@@ -16,26 +47,25 @@
   --drawer-border: #9b5ab8;
   --text-light: #fff0f8;
   --text-muted: #e8b4d8;
-  --radio-accent: #e8189e;
+  --radio-accent: #a855f7;
   --item-hover: #3d1060;
   --scrollbar-track: #faf5ff;
   --scrollbar-thumb: #c4b5fd;
-  --badge-freq-color: #e879c8;
+  --badge-freq-color: #c084fc;
   --badge-cents-bg: #3d1060;
-  --drawer-w: 220px;
   --header-title: #fff0f8;
   --drawer-header-text: #fce8f8;
   --drawer-close: #e8b4d8;
   --drawer-close-hover: #fff0f8;
-  --drawer-close-hover-bg: #e8189e;
+  --drawer-close-hover-bg: #a855f7;
 
-  --c-line: #e8189e;
-  --c-label: #e8189e;
+  --c-line: #a855f7;
+  --c-label: #a855f7;
   --diatonic-line: #b07ad4;
   --diatonic-label: #9b5ab8;
   --chromatic-line: #d4b8e8;
-  --canvas-trail: #b07ad4;
-  --canvas-current: #e8189e;
+  --canvas-trail: #a78bfa;
+  --canvas-current: #8b5cf6;
 }
 
 /* ── Blue theme ─────────────────────────────────────────────── */
@@ -89,57 +119,26 @@
   color: #fdfeff;
 }
 
-/* ── Dark theme ─────────────────────────────────────────────── */
-[data-theme="dark"] {
-  --app-bg: #111827;
-  --display-bg: #1f2937;
-  --shell-bg: #030712;
-  --drawer-bg: #111827;
-  --drawer-border: #374151;
-  --text-light: #f9fafb;
-  --text-muted: #9ca3af;
-  --radio-accent: #9ca3af;
-  --item-hover: #1f2937;
-  --scrollbar-track: #1f2937;
-  --scrollbar-thumb: #374151;
-  --badge-freq-color: #e5e7eb;
-  --badge-cents-bg: #374151;
-  --header-title: #f9fafb;
-  --drawer-header-text: #9ca3af;
-  --drawer-close: #6b7280;
-  --drawer-close-hover: #f9fafb;
-  --drawer-close-hover-bg: #374151;
-  --c-line: #f9fafb;
-  --c-label: #f9fafb;
-  --diatonic-line: #6b7280;
-  --diatonic-label: #9ca3af;
-  --chromatic-line: #374151;
-  --canvas-trail: #6b7280;
-  --canvas-current: #e5e7eb;
-}
-
-[data-theme="dark"] .settings-drawer {
+[data-theme="purple"] .settings-drawer {
   background: linear-gradient(
     160deg,
-    rgba(55, 65, 81, 0.98) 0%,
-    rgba(31, 41, 55, 0.98) 50%,
-    rgba(3, 7, 18, 0.99) 100%
+    rgba(232, 180, 240, 0.97) 0%,
+    rgba(176, 122, 212, 0.94) 30%,
+    rgba(60, 16, 96, 0.92) 65%,
+    rgba(22, 8, 32, 0.96) 100%
   );
 }
-[data-theme="dark"] .fix-button.detecting {
-  background: linear-gradient(135deg, #374151, #9ca3af);
+[data-theme="purple"] .fix-button.detecting {
+  background: linear-gradient(135deg, #260d3a, #a855f7);
 }
-[data-theme="dark"] .fix-button.paused {
-  background: linear-gradient(135deg, #1f2937, #6b7280);
+[data-theme="purple"] .fix-button.paused {
+  background: linear-gradient(135deg, #160820, #9b5ab8);
 }
-[data-theme="dark"] .drawer-toggle:hover {
-  background: #374151;
+[data-theme="purple"] .drawer-toggle:hover {
+  background: #3d1060;
 }
-[data-theme="dark"] .drawer-section-title {
-  color: #9ca3af;
-}
-[data-theme="dark"] .settings-drawer {
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
+[data-theme="purple"] .drawer-section-title {
+  color: #ffe4f6;
 }
 
 html,
@@ -394,12 +393,12 @@ body,
   transform: scale(0.95);
 }
 .fix-button.detecting {
-  background: linear-gradient(135deg, #260d3a, #e8189e);
-  color: #fff0f8;
+  background: linear-gradient(135deg, #374151, #9ca3af);
+  color: #f9fafb;
 }
 .fix-button.paused {
-  background: linear-gradient(135deg, #160820, #9b5ab8);
-  color: #f5eeff;
+  background: linear-gradient(135deg, #1f2937, #6b7280);
+  color: #f9fafb;
 }
 
 .btn-dot {
@@ -448,7 +447,7 @@ body,
   transition: background 0.2s;
 }
 .drawer-toggle:hover {
-  background: #3d1060;
+  background: #374151;
 }
 .drawer-toggle-icon {
   font-size: 10px;
@@ -467,15 +466,14 @@ body,
   width: var(--drawer-w);
   background: linear-gradient(
     160deg,
-    rgba(232, 180, 240, 0.97) 0%,
-    rgba(176, 122, 212, 0.94) 30%,
-    rgba(60, 16, 96, 0.92) 65%,
-    rgba(22, 8, 32, 0.96) 100%
+    rgba(55, 65, 81, 0.98) 0%,
+    rgba(31, 41, 55, 0.98) 50%,
+    rgba(3, 7, 18, 0.99) 100%
   );
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-right: 1px solid var(--drawer-border);
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.6);
   z-index: 45;
   overflow-y: auto;
   transform: translateX(-100%);
@@ -541,7 +539,7 @@ body,
   border-bottom: 1px solid var(--drawer-border);
 }
 .drawer-section-title {
-  color: #ffe4f6;
+  color: #9ca3af;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
