@@ -68,12 +68,19 @@ const M_SPAN = M_TOP - M_BOT;
 const P = {
   bg: "#07071a",
   gridLine: "#0d0d2e",
+  gridWhole: "#2a3aa0", // saturated divider — whole-step interval
+  gridHalf: "#16162e", // muted divider — half-step interval
+  colDisabled: "#020208",
   colActive: "#080f0b",
   label: "#2244dd",
   labelActive: "#33ffaa",
   hud: "#040410",
   score: "#00eeff",
   lives: "#ff2255",
+  hBody: "#ff3366",
+  hTop: "#ff88bb",
+  hShad: "#550022",
+  hShine: "#ffffff",
   dBody: "#cc2200",
   dTop: "#ff5533",
   dShine: "#ff9977",
@@ -148,6 +155,28 @@ export default function MusicGame() {
   const [scores, setScores] = useState(() => loadScores().slice(0, 10));
   const [detecting, setDetecting] = useState(false);
   const [scale, setScale] = useState(1);
+  const [enabledLanes, setEnabledLanes] = useState([
+    true,
+    true,
+    true,
+    false,
+    false,
+    false,
+    false,
+  ]);
+  const enabledLanesRef = useRef(enabledLanes);
+  const nextUnlockRef = useRef(150);
+
+  useEffect(() => {
+    enabledLanesRef.current = enabledLanes;
+  }, [enabledLanes]);
+
+  const toggleLane = (i) =>
+    setEnabledLanes((prev) => {
+      const next = [...prev];
+      next[i] = !next[i];
+      return next;
+    });
 
   useEffect(() => {
     function updateScale() {
@@ -275,9 +304,14 @@ export default function MusicGame() {
           Math.sin(frame * 0.04 + s.ph) > 0.55 ? "#ffffff" : "#12123a";
         ctx.fillRect(s.x, s.y, s.r, s.r);
       });
-      // col lines
+      // col lines (whole-step saturated, half-step muted)
       for (let i = 0; i < COLS; i++) {
-        ctx.fillStyle = P.gridLine;
+        let c = P.gridLine;
+        if (i > 0) {
+          const isHalf = NOTE_ST[i] - NOTE_ST[i - 1] === 1;
+          c = isHalf ? P.gridHalf : P.gridWhole;
+        }
+        ctx.fillStyle = c;
         ctx.fillRect(i * COL_W, 0, 1, GAME_H);
       }
       // drifting blocks
@@ -345,9 +379,13 @@ export default function MusicGame() {
       [2, 4, 6], // skip-one (C-E-G feel)
     ];
 
+    nextUnlockRef.current = enabledLanesRef.current.every(Boolean)
+      ? Infinity
+      : 150;
+
     const s = {
-      fCol: 3,
-      cannonX: fcToX(3),
+      fCol: 0,
+      cannonX: fcToX(0),
       bullets: [],
       blocks: [],
       exps: [],
@@ -357,8 +395,9 @@ export default function MusicGame() {
       frame: 0,
       lastShot: -60,
       shotRate: 52,
-      blkRate: 90,
+      blkRate: 115,
       blkSpeed: 1,
+      lastHeartFrame: -600,
       over: false,
     };
 
@@ -368,20 +407,31 @@ export default function MusicGame() {
     };
 
     function drawGrid() {
+      const enabled = enabledLanesRef.current;
       for (let i = 0; i < COLS; i++) {
-        px(
-          i * COL_W,
-          HUD_H,
-          COL_W,
-          GAME_H - HUD_H,
-          Math.abs(i - s.fCol) < 0.55 ? P.colActive : P.bg,
-        );
-        px(i * COL_W, HUD_H, 1, GAME_H - HUD_H, P.gridLine);
+        const focus = Math.abs(i - s.fCol) < 0.55;
+        const bg = !enabled[i]
+          ? P.colDisabled
+          : focus
+            ? P.colActive
+            : P.bg;
+        px(i * COL_W, HUD_H, COL_W, GAME_H - HUD_H, bg);
+        let lineColor = P.gridLine;
+        if (i > 0) {
+          const isHalf = NOTE_ST[i] - NOTE_ST[i - 1] === 1;
+          lineColor = isHalf ? P.gridHalf : P.gridWhole;
+        }
+        px(i * COL_W, HUD_H, 1, GAME_H - HUD_H, lineColor);
       }
       ctx.font = "bold 13px monospace";
       ctx.textAlign = "center";
       NOTES.forEach((n, i) => {
-        ctx.fillStyle = Math.abs(i - s.fCol) < 0.55 ? P.labelActive : P.label;
+        const focus = Math.abs(i - s.fCol) < 0.55;
+        ctx.fillStyle = !enabled[i]
+          ? "#1e1e3a"
+          : focus
+            ? P.labelActive
+            : P.label;
         ctx.fillText(n, i * COL_W + COL_W / 2, HUD_H + 19);
       });
       px(0, HUD_H + LABEL_H - 1, GAME_W, 1, "#14143a");
@@ -401,6 +451,22 @@ export default function MusicGame() {
 
     function drawBlock(b) {
       const cx = b.screenX;
+      if (b.heart) {
+        const x = cx - DBLK_W / 2;
+        const pulse = 0.5 + 0.5 * Math.sin(s.frame * 0.18);
+        ctx.fillStyle = `rgba(255,80,140,${0.15 + 0.15 * pulse})`;
+        ctx.fillRect(x - 3, b.y - 3, DBLK_W + 6, DBLK_H + 6);
+        px(x + 2, b.y + 3, DBLK_W, DBLK_H, P.hShad);
+        px(x, b.y, DBLK_W, DBLK_H, P.hBody);
+        px(x, b.y, DBLK_W, 4, P.hTop);
+        ctx.fillStyle = P.hShine;
+        ctx.font = "bold 14px monospace";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("♥", cx, b.y + DBLK_H / 2 + 1);
+        ctx.textBaseline = "alphabetic";
+        return;
+      }
       if (b.chr) {
         const x = cx - CBLK_W / 2;
         px(x + 2, b.y + 3, CBLK_W, CBLK_H, "#330044");
@@ -443,11 +509,14 @@ export default function MusicGame() {
       if (t >= 1) return;
       ctx.globalAlpha = 1 - t;
       const r = t * 26 + 4;
+      const palette = e.heal
+        ? ["#33ffaa", "#ffffff", "#aaffdd", "#33ffaa", "#88ffcc"]
+        : P.ex;
       for (let i = 0; i < 7; i++) {
         const a = (i / 7) * Math.PI * 2 + e.f * 0.5;
         const ex = e.cx + Math.cos(a) * r,
           ey = e.cy + Math.sin(a) * r;
-        ctx.fillStyle = P.ex[(e.f + i) % 5];
+        ctx.fillStyle = palette[(e.f + i) % 5];
         ctx.fillRect(ex - 4, ey - 4, 8, 8);
         if (t < 0.5) {
           ctx.fillStyle = "#fff";
@@ -461,10 +530,9 @@ export default function MusicGame() {
       ctx.globalAlpha = 1;
     }
 
-    function pushBlock(col, chr) {
+    function pushBlock(col, chr, chrST) {
       if (chr) {
-        const chrSTs = [1, 3, 6, 8, 10];
-        const st = chrSTs[Math.floor(Math.random() * chrSTs.length)];
+        const st = chrST;
         const fc = stToFC(st);
         s.blocks.push({
           chr: true,
@@ -490,22 +558,72 @@ export default function MusicGame() {
       }
     }
 
+    function pushHeart(col) {
+      s.blocks.push({
+        heart: true,
+        chr: false,
+        fc: col,
+        screenX: fcToX(col),
+        y: PLAY_TOP + LABEL_H,
+        alive: true,
+        bw: DBLK_W,
+        bh: DBLK_H,
+        pts: 0,
+      });
+    }
+
     function spawnBlock() {
+      const enabled = enabledLanesRef.current;
+      const enabledCols = [];
+      for (let i = 0; i < COLS; i++) if (enabled[i]) enabledCols.push(i);
+      if (enabledCols.length === 0) return;
+
+      const pickDiatonic = () =>
+        enabledCols[Math.floor(Math.random() * enabledCols.length)];
+
+      // Heart drop — visible-but-not-spammy.
+      // 8% per spawn, plus a guaranteed drop if none has appeared for ~12 s.
+      if (s.lives < 10) {
+        const since = s.frame - s.lastHeartFrame;
+        const guaranteed = since > 720; // ~12 s at 60fps
+        if (guaranteed || Math.random() < 0.08) {
+          pushHeart(pickDiatonic());
+          s.lastHeartFrame = s.frame;
+          return;
+        }
+      }
+
       const rand = Math.random();
       if (rand < 0.025) {
-        // Chromatic (2.5%) — occasional sharp
-        pushBlock(0, true);
+        // Chromatic (2.5%) — sharp must sit between two enabled lanes
+        const validSTs = [];
+        if (enabled[0] && enabled[1]) validSTs.push(1);
+        if (enabled[1] && enabled[2]) validSTs.push(3);
+        if (enabled[3] && enabled[4]) validSTs.push(6);
+        if (enabled[4] && enabled[5]) validSTs.push(8);
+        if (enabled[5] && enabled[6]) validSTs.push(10);
+        if (validSTs.length > 0) {
+          const st = validSTs[Math.floor(Math.random() * validSTs.length)];
+          pushBlock(0, true, st);
+        } else {
+          pushBlock(pickDiatonic(), false);
+        }
       } else if (rand < 0.38) {
-        // Scale burst (30%) — pick a run pattern, fire 1 now, queue the rest
-        const pat =
-          SCALE_PATTERNS[Math.floor(Math.random() * SCALE_PATTERNS.length)];
-        pushBlock(pat[0], false);
-        pat.slice(1).forEach((col, i) => {
-          s.burst.push({ col, countdown: (i + 1) * 40 }); // ~40 frames apart ≈ 0.67 s each
-        });
+        // Scale burst — only patterns fully within enabled lanes
+        const valid = SCALE_PATTERNS.filter((pat) =>
+          pat.every((c) => enabled[c]),
+        );
+        if (valid.length > 0) {
+          const pat = valid[Math.floor(Math.random() * valid.length)];
+          pushBlock(pat[0], false);
+          pat.slice(1).forEach((col, i) => {
+            s.burst.push({ col, countdown: (i + 1) * 40 });
+          });
+        } else {
+          pushBlock(pickDiatonic(), false);
+        }
       } else {
-        // Single random diatonic (62%)
-        pushBlock(Math.floor(Math.random() * COLS), false);
+        pushBlock(pickDiatonic(), false);
       }
     }
 
@@ -544,7 +662,7 @@ export default function MusicGame() {
       // Difficulty ramp every ~8 sec (480 frames)
       if (s.frame % 480 === 0 && s.frame > 0) {
         s.blkSpeed = Math.min(s.blkSpeed + 0.2, 3.8);
-        s.blkRate = Math.max(s.blkRate - 5, 35);
+        s.blkRate = Math.max(s.blkRate - 4, 50);
         s.shotRate = Math.max(s.shotRate - 2, 26);
       }
 
@@ -552,6 +670,22 @@ export default function MusicGame() {
       s.blocks.forEach((b) => {
         if (b.alive) b.y += s.blkSpeed;
       });
+
+      // Auto-unlock: every +150 score, enable the next disabled lane (F→B)
+      if (s.score >= nextUnlockRef.current) {
+        const lanes = enabledLanesRef.current;
+        const idx = [3, 4, 5, 6].find((i) => !lanes[i]);
+        if (idx !== undefined) {
+          setEnabledLanes((prev) => {
+            const next = [...prev];
+            next[idx] = true;
+            return next;
+          });
+          nextUnlockRef.current += 150;
+        } else {
+          nextUnlockRef.current = Infinity;
+        }
+      }
 
       // Bullet × block
       s.bullets.forEach((bullet) => {
@@ -565,20 +699,31 @@ export default function MusicGame() {
           ) {
             block.alive = false;
             bullet.y = -9999;
-            s.score += block.pts;
-            s.exps.push({
-              cx: block.screenX,
-              cy: block.y + block.bh / 2,
-              f: 0,
-            });
+            if (block.heart) {
+              s.lives = Math.min(10, s.lives + 1);
+              s.exps.push({
+                cx: block.screenX,
+                cy: block.y + block.bh / 2,
+                f: 0,
+                heal: true,
+              });
+            } else {
+              s.score += block.pts;
+              s.exps.push({
+                cx: block.screenX,
+                cy: block.y + block.bh / 2,
+                f: 0,
+              });
+            }
           }
         });
       });
 
-      // Block hits floor
+      // Block hits floor (hearts vanish silently)
       s.blocks.forEach((block) => {
         if (block.alive && block.y + block.bh >= CANNON_Y - 20) {
           block.alive = false;
+          if (block.heart) return;
           s.lives--;
           s.exps.push({ cx: block.screenX, cy: CANNON_Y - 20, f: 0 });
           if (s.lives <= 0) s.over = true;
@@ -636,6 +781,28 @@ export default function MusicGame() {
   // ── JSX ──────────────────────────────────────────────────────────────────
   return (
     <div style={S.wrap}>
+      {/* Lane toggle bar — auto-unlocks every +150 pts; user can also toggle */}
+      <div style={{ ...S.laneBar, width: CANVAS_W * scale }}>
+        {NOTES.map((n, i) => {
+          const on = enabledLanes[i];
+          const isHalfRight = i < COLS - 1 && NOTE_ST[i + 1] - NOTE_ST[i] === 1;
+          return (
+            <button
+              key={n}
+              onClick={() => toggleLane(i)}
+              style={{
+                ...S.laneBtn,
+                ...(on ? S.laneBtnOn : S.laneBtnOff),
+                marginRight: isHalfRight ? 2 : 6,
+              }}
+              title={on ? `Disable ${n}` : `Enable ${n}`}
+            >
+              {n}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Outer clip wrapper — shrinks on mobile via scale */}
       <div
         style={{
@@ -972,4 +1139,36 @@ const S = {
   silence: { color: "#111133", fontSize: 12 },
   hz: { color: "#334455", fontSize: 11 },
   err: { color: "#ff3344", fontSize: 11 },
+  laneBar: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 0,
+    marginBottom: 8,
+    padding: "4px 6px",
+    border: "1px solid #13133a",
+    background: "#040414",
+    fontFamily: '"Courier New",Courier,monospace',
+  },
+  laneBtn: {
+    padding: "6px 10px",
+    minWidth: 32,
+    fontSize: 13,
+    fontWeight: "bold",
+    fontFamily: "inherit",
+    cursor: "pointer",
+    letterSpacing: "0.05em",
+    background: "transparent",
+    transition: "all 0.1s",
+  },
+  laneBtnOn: {
+    border: "2px solid #33ffaa",
+    color: "#33ffaa",
+    boxShadow: "0 0 8px #33ffaa44",
+  },
+  laneBtnOff: {
+    border: "2px solid #1e1e44",
+    color: "#334466",
+    boxShadow: "none",
+  },
 };
